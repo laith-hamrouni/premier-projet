@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Espace administration</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header>
+    <h1>Espace administration</h1>
+    <a class="retour" href="index.html">← Accueil</a>
+  </header>
+  <main>
+    <div class="grille" id="stats"></div>
+
+    <div class="carte">
+      <label for="recherche">Rechercher</label>
+      <input id="recherche" placeholder="Nom ou matricule" oninput="afficher()">
+    </div>
+
+    <div class="carte tableau">
+      <table>
+        <thead>
+          <tr>
+            <th>Matricule</th><th>Nom</th><th>Moyenne</th>
+            <th>Absences</th><th>Présence</th><th>Situation</th>
+          </tr>
+        </thead>
+        <tbody id="corps"></tbody>
+      </table>
+    </div>
+  </main>
+
+  <script src="js/data.js"></script>
+  <script>
+    function calculer(e) {
+      let somme = 0, coefs = 0, seances = 0, absences = 0, minRestantes = Infinity;
+      e.modules.forEach(m => {
+        somme += m.note * m.coef;
+        coefs += m.coef;
+        seances += m.seances;
+        absences += m.absences;
+        minRestantes = Math.min(minRestantes, m.maxAbsences - m.absences);
+      });
+      return {
+        moyenne: somme / coefs,
+        absences: absences,
+        presence: (seances - absences) / seances * 100,
+        minRestantes: minRestantes
+      };
+    }
+
+    function afficher() {
+      const q = document.getElementById("recherche").value.trim().toLowerCase();
+      const liste = etudiants.filter(e =>
+        e.nom.toLowerCase().includes(q) || e.matricule.includes(q));
+
+      let lignes = "";
+      liste.forEach(e => {
+        const c = calculer(e);
+        let situation = "OK", classe = "ok";
+        if (c.minRestantes <= 0) { situation = "Limite atteinte"; classe = "danger"; }
+        else if (c.minRestantes <= 1) { situation = "Attention"; classe = "alerte"; }
+        lignes += `<tr>
+          <td>${e.matricule}</td>
+          <td>${e.nom}</td>
+          <td>${c.moyenne.toFixed(2)}</td>
+          <td>${c.absences}</td>
+          <td>${c.presence.toFixed(0)}%</td>
+          <td class="${classe}">${situation}</td>
+        </tr>`;
+      });
+      document.getElementById("corps").innerHTML =
+        lignes || `<tr><td colspan="6">Aucun résultat.</td></tr>`;
+    }
+
+    function statistiques() {
+      const tous = etudiants.map(calculer);
+      const n = tous.length;
+      const moyClasse = n ? tous.reduce((s, c) => s + c.moyenne, 0) / n : 0;
+      const enDanger = tous.filter(c => c.minRestantes <= 0).length;
+      const succes = tous.filter(c => c.moyenne >= 10).length;
+      document.getElementById("stats").innerHTML = `
+        <div class="stat"><span>${n}</span>Étudiants</div>
+        <div class="stat"><span>${moyClasse.toFixed(2)}</span>Moyenne de la classe</div>
+        <div class="stat"><span>${succes}</span>Moyenne ≥ 10</div>
+        <div class="stat"><span class="danger">${enDanger}</span>Limite d'absences atteinte</div>`;
+    }
+
+    statistiques();
+    afficher();
+  </script>
+</body>
+</html>
