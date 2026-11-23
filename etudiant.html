@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Espace étudiant</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header><h1>Espace étudiant</h1></header>
+  <main>
+    <div class="carte">
+      <label for="matricule">Votre matricule</label>
+      <input id="matricule" placeholder="ex : 2026001">
+      <button onclick="afficher()">Consulter</button>
+      <p id="erreur" class="erreur"></p>
+    </div>
+    <div id="resultat"></div>
+  </main>
+  <script src="js/data.js"></script>
+  <script>
+    function afficher() {
+      const mat = document.getElementById("matricule").value.trim();
+      const e = etudiants.find(x => x.matricule === mat);
+      const res = document.getElementById("resultat");
+      const err = document.getElementById("erreur");
+      if (!e) { res.innerHTML = ""; err.textContent = "Matricule introuvable."; return; }
+      err.textContent = "";
+
+      let somme = 0, coefs = 0, lignes = "";
+      e.modules.forEach(m => {
+        somme += m.note * m.coef;
+        coefs += m.coef;
+        const restantes = m.maxAbsences - m.absences;
+        const presence = ((m.seances - m.absences) / m.seances * 100).toFixed(0);
+        const statut = restantes <= 0 ? "danger" : restantes <= 1 ? "alerte" : "ok";
+        lignes += `<tr>
+          <td>${m.nom}</td><td>${m.note}</td><td>${m.coef}</td>
+          <td>${m.absences}</td>
+          <td class="${statut}">${Math.max(restantes, 0)}</td>
+          <td>${presence}%</td></tr>`;
+      });
+      const moyenne = (somme / coefs).toFixed(2);
+
+      res.innerHTML = `
+        <div class="carte">
+          <h2>${e.nom}</h2>
+          <p class="moyenne">Moyenne générale : <strong>${moyenne} / 20</strong></p>
+        </div>
+        <div class="carte tableau">
+          <table>
+            <tr><th>Module</th><th>Note</th><th>Coef</th><th>Absences</th><th>Restantes</th><th>Présence</th></tr>
+            ${lignes}
+          </table>
+        </div>`;
+    }
+  </script>
+</body>
+</html>
