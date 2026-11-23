@@ -18,3 +18,16 @@ const etudiants = [
     ]
   }
 ];
+function sauvegarder() {
+  localStorage.setItem("etudiants", JSON.stringify(etudiants));
+}
+
+(function charger() {
+  const s = localStorage.getItem("etudiants");
+  if (!s) return;
+  try {
+    const donnees = JSON.parse(s);
+    etudiants.length = 0;
+    donnees.forEach(e => etudiants.push(e));
+  } catch (err) {}
+})();
