@@ -4,7 +4,7 @@ Site web qui permet de consulter les notes, les absences et le taux de présence
 
 Projet réalisé dans le cadre du module **Digital** (Git, Bash, GitHub).
 
-**Auteur :** laith hamrouni
+**Auteur :** laith hamrouni rayen bouzidi iyed bouzidi
 
 ## Fonctionnalités
 
